@@ -1,7 +1,133 @@
+#include <array>
+#include <tuple>
+#include "fmt/core.h"
+#include "fmt/ranges.h"
+
 #define f32 float
 #define f64 double
 
 #define FP f64
+
+struct col4_t
+{
+	FP r = 0.0;
+	FP g = 0.0;
+	FP b = 0.0;
+	FP a = 0.0;
+
+	col4_t& operator=(const col4_t& o)
+	{
+		r = o.r;
+		g = o.g;
+		b = o.b;
+		a = o.a;
+		return *this;
+	}
+
+	std::tuple<int,int,int> as_inttuple()
+	{
+		return
+		{
+			int(r * 255.999) % 255,
+			int(g * 255.999) % 255,
+			int(b * 255.999) % 255
+		};
+	}
+
+	bool operator==(const col4_t& other)
+	{
+		if 
+		(
+			abs(r - other.r) < 0.0001 and
+			abs(g - other.g) < 0.0001 and
+			abs(b - other.b) < 0.0001 and
+			abs(a - other.a) < 0.0001
+		) { return true; }
+		else return false;
+	}
+
+	col4_t operator+(const col4_t& other)
+	{
+		return
+		{ 
+			r + other.r,
+			g + other.g,
+			b + other.b,
+			a + other.a
+		};
+	}
+
+	col4_t operator-(const col4_t& other)
+	{
+		return
+		{ 
+			r - other.r,
+			g - other.g,
+			b - other.b,
+			a - other.a
+		};
+	}
+
+	col4_t operator*(const col4_t& o)
+	{
+		return
+		{
+			r * o.r,
+			g * o.g,
+			b * o.b,
+			a * o.a
+		};
+	}
+
+	col4_t operator*(const FP& o)
+	{
+		return
+		{
+			r * o,
+			g * o,
+			b * o,
+			a * o
+		};
+	}
+
+	col4_t operator/(const col4_t& o)
+	{
+		return
+		{
+			r / o.r,
+			g / o.g,
+			b / o.b,
+			a / o.a
+		};
+	}
+
+	col4_t operator/(const FP& o)
+	{
+		return *this * (1.0 / o);
+	}
+};
+
+struct canvas_t
+{
+	static const int width  = 256;
+	static const int height = 256;
+	std::array<col4_t, width * height> pixels;
+
+	void write(int x, int y, col4_t col)
+	{ pixels[width * x + y] = col; }
+
+	void clear()
+	{ for(auto &p : pixels) { p = {0,0,0,0}; }}
+
+	void as_ppm()
+	{
+		fmt::print("P3\n{} {}\n255\n", width, height);
+		for(auto p : pixels)
+		{
+			fmt::print("{} ", fmt::join(p.as_inttuple(), " "));
+		}
+	}
+};
 
 struct vec4_t
 {
@@ -21,6 +147,7 @@ struct vec4_t
 
 		return *this;
 	}
+
 	bool operator==(const vec4_t& other)
 	{
 		if 
@@ -45,6 +172,13 @@ struct vec4_t
 			t + other.t
 		};
 	}
+
+	vec4_t& operator+=(const vec4_t& other)
+	{
+		*this = *this + other;
+		return *this;
+	}
+
 	vec4_t operator-(const vec4_t& other)
 	{
 		return
@@ -66,7 +200,7 @@ struct vec4_t
 			0 - t
 		};
 	}
-
+	/* mul with scalar */
 	vec4_t operator*(const FP& other)
 	{
 		return
@@ -77,16 +211,24 @@ struct vec4_t
 			t * other
 		};
 	}
-
 	vec4_t operator/(const FP& other)
 	{
-		FP temp = 1.0/other;
+		return (*this * (1.0/other));
+	}
+
+	/* dot and cross product */
+	FP     operator%(const vec4_t& o) // DOT PRODUCT
+	{ 
+		return (x * o.x) + (y * o.y) + (z * o.z) + (t * o.t); 
+	}
+	vec4_t operator*(const vec4_t& o) // cross product
+	{ 
 		return
 		{
-			x * temp,
-			y * temp,
-			z * temp,
-			t * temp
+			y * o.z - z * o.y,
+			z * o.x - x * o.z,
+			x * o.y - y * o.x,
+			t * o.t
 		};
 	}
 
