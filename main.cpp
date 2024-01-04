@@ -11,7 +11,7 @@ int main()
 {
 	vec4_t a = { 3, 5, 14, 0 };
 	vec4_t b = a;
-	fmt::print("({},{},{}: {})\n", a.x, a.y, a.z, (a+b).mag());
+	fmt::print("({},{},{}: {})\n", a.x, a.y, a.z, (-a-b).mag());
 
 	return 0;
 }

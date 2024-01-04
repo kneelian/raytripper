@@ -56,6 +56,40 @@ struct vec4_t
 		};
 	}
 
+	vec4_t operator-()
+	{
+		return
+		{ 
+			0 - x,
+			0 - y,
+			0 - z,
+			0 - t
+		};
+	}
+
+	vec4_t operator*(const FP& other)
+	{
+		return
+		{
+			x * other,
+			y * other,
+			z * other,
+			t * other
+		};
+	}
+
+	vec4_t operator/(const FP& other)
+	{
+		FP temp = 1.0/other;
+		return
+		{
+			x * temp,
+			y * temp,
+			z * temp,
+			t * temp
+		};
+	}
+
 	bool pnt() // is it a point or not
 	{ return t == 1; }
 
@@ -65,7 +99,28 @@ struct vec4_t
 	FP mag()
 	{
 		if(pnt()) { return 0.0; } else
-		return sqrt((x * x) + (y * y) + (z * z));
+		return sqrt((x * x) + (y * y) + (z * z) + (t * t));
+	}
+
+	void norm_me()
+	{
+		FP temp = mag();
+		x /= temp;
+		y /= temp;
+		z /= temp;
+		t /= temp;
+	}
+
+	vec4_t norm()
+	{
+		FP temp = mag();
+		return
+		{
+			x /= temp,
+			y /= temp,
+			z /= temp,
+			t /= temp
+		};
 	}
 };
 
