@@ -1,3 +1,5 @@
+#pragma once
+
 #include <array>
 #include <tuple>
 #include "fmt/core.h"
@@ -122,9 +124,13 @@ struct col4_t
 
 struct canvas_t
 {
-	static const int width  = 256;
-	static const int height = 256;
-	std::array<col4_t, width * height> pixels;
+	#define WIDTH 384
+	#define HEIGHT 384
+
+	int width = WIDTH;
+	int height = HEIGHT;
+
+	std::array<col4_t, WIDTH * HEIGHT> pixels;
 
 	void write(int x, int y, col4_t col)
 	{ 
