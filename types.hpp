@@ -5,8 +5,11 @@
 
 #define f32 float
 #define f64 double
+#define f80 long double
 
 #define FP f64
+
+#define INFTY std::numeric_limits<FP>::infinity()
 
 struct col4_t
 {
@@ -31,6 +34,16 @@ struct col4_t
 			int(r * 255.999) % 255,
 			int(g * 255.999) % 255,
 			int(b * 255.999) % 255
+		};
+	}
+
+	std::tuple<uint8_t, uint8_t, uint8_t> as_bytetuple()
+	{
+		return
+		{
+			uint8_t(r * 255.999),
+			uint8_t(g * 255.999),
+			uint8_t(b * 255.999)
 		};
 	}
 
@@ -114,12 +127,36 @@ struct canvas_t
 	std::array<col4_t, width * height> pixels;
 
 	void write(int x, int y, col4_t col)
-	{ pixels[width * x + y] = col; }
+	{ 
+		x %= (width - 1);
+		y %= (height- 1);
+		pixels[x + width * y] = col; 
+	}
+
+	void w_rect(int x, int y, int w, int h, col4_t col)
+	{
+		for(int i = x; i < (x + w); i++)
+		{
+			for(int j = y; j < (y + h); j++)
+			{
+				pixels[i + width * j] = col;
+			}
+		}
+	}
 
 	void clear()
 	{ for(auto &p : pixels) { p = {0,0,0,0}; }}
 
-	void as_ppm()
+	void as_ppm6()
+	{
+		fmt::print("P6\n{} {}\n255\n", width, height);
+		for(auto p : pixels)
+		{
+			auto t = p.as_bytetuple();
+			fmt::print("{:c}{:c}{:c}", std::get<0>(t), std::get<1>(t), std::get<2>(t));
+		}
+	}
+		void as_ppm3()
 	{
 		fmt::print("P3\n{} {}\n255\n", width, height);
 		for(auto p : pixels)
